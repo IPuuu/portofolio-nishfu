@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════════
    THEME TOKENS — change here for global re-skin
@@ -216,6 +217,27 @@ nav.scrolled {
 #hero-canvas {
   position:absolute; inset:0; width:100%; height:100%;
   pointer-events:none; z-index:0;
+}
+
+/* Hero image (right side) */
+.hero-image-wrap {
+  position:absolute; right:0; top:0; bottom:0;
+  width:45%; z-index:0; overflow:hidden; pointer-events:none;
+}
+.hero-image-wrap::before {
+  content:''; position:absolute; inset:0; z-index:1;
+  background:linear-gradient(90deg, var(--bg) 0%, transparent 40%),
+             linear-gradient(180deg, var(--bg) 0%, transparent 20%, transparent 80%, var(--bg) 100%);
+}
+.hero-image-wrap img {
+  width:100%; height:100%; object-fit:cover; object-position:center top;
+  opacity:.55; filter:grayscale(20%) contrast(1.05);
+  transition:opacity .4s;
+}
+[data-theme="light"] .hero-image-wrap img { opacity:.35; filter:grayscale(30%) contrast(1.1); }
+[data-theme="light"] .hero-image-wrap::before {
+  background:linear-gradient(90deg, var(--bg) 0%, transparent 40%),
+             linear-gradient(180deg, var(--bg) 0%, transparent 20%, transparent 80%, var(--bg) 100%);
 }
 
 .hero-content { position:relative; z-index:1; max-width:1160px; margin:0 auto; width:100%; }
@@ -599,6 +621,10 @@ footer {
 <!-- ═══ HERO ══════════════════════════════════════════════════ -->
 <section id="home">
   <canvas id="hero-canvas"></canvas>
+  <!-- Hero portrait image -->
+  <div class="hero-image-wrap">
+    <img src="asset/heroimage.jpg" alt="Nishfu" onerror="this.parentElement.style.display='none'">
+  </div>
   <div class="scan-line"></div>
   <div class="hero-content">
     <div class="hero-pre"><span class="hero-pre-dot"></span>Final-year Software Engineering Student</div>
@@ -640,7 +666,8 @@ footer {
           <div class="about-links">
             <a class="social-btn" href="https://instagram.com/n_ipuu" target="_blank">IG · Instagram ↗</a>
             <a class="social-btn" href="https://www.artstation.com/ipuuuu" target="_blank">AS · ArtStation ↗</a>
-            <a class="social-btn" href="#" target="_blank">PT · Pinterest</a>
+            <a class="social-btn" href="http://id.pinterest.com/mnishfudesinski/_pins/" target="_blank">PT · Pinterest ↗</a>
+            <a class="social-btn" href="https://www.linkedin.com/in/nishfu-desinski-b6877b346/" target="_blank">LI · LinkedIn ↗</a>
           </div>
         </div>
       </div>
@@ -750,9 +777,15 @@ footer {
           <div><label class="form-label">Email *</label><input class="form-input" id="fEmail" placeholder="your@email.com" type="email"></div>
         </div>
         <div class="form-group">
+          <label class="form-label">Subject</label>
+          <input class="form-input" id="fSubject" placeholder="Project inquiry / Collaboration / Other" type="text">
+        </div>
+        <div class="form-group">
           <label class="form-label">Message *</label>
           <textarea class="form-input" id="fMsg" placeholder="Tell me about your project..." rows="5"></textarea>
         </div>
+        <!-- Status message -->
+        <div id="formStatus" style="display:none;margin-bottom:14px;padding:12px 16px;border-radius:8px;font-size:13px;font-family:'DM Mono',monospace;letter-spacing:.04em"></div>
         <div class="form-actions">
           <button class="btn-primary" onclick="submitForm()" id="sendBtn">Send Message ↗</button>
         </div>
@@ -761,7 +794,8 @@ footer {
     <div class="social-row reveal" data-delay=".2">
       <a class="social-btn" href="https://instagram.com/n_ipuu" target="_blank">Instagram ↗</a>
       <a class="social-btn" href="https://www.artstation.com/ipuuuu" target="_blank">ArtStation ↗</a>
-      <a class="social-btn" href="#" target="_blank">Pinterest</a>
+      <a class="social-btn" href="http://id.pinterest.com/mnishfudesinski/_pins/" target="_blank">Pinterest ↗</a>
+      <a class="social-btn" href="https://www.linkedin.com/in/nishfu-desinski-b6877b346/" target="_blank">LinkedIn ↗</a>
     </div>
   </div>
 </section>
@@ -831,7 +865,7 @@ const PROJECTS = [
     tools:    ['Blender','Substance Painter','HDRI Lighting'],
     color:    '#00C9A7',
     emoji:    '💻',
-    imageUrl: null,   // ← REPLACE with your image URL, e.g. '/asset/Laptop/laptopbelakang.png'
+    imageUrl: 'asset/asustuf.jpg',
   },
   {
     id: 2,
@@ -842,7 +876,7 @@ const PROJECTS = [
     tools:    ['Blender','Substance Painter','Unity'],
     color:    '#FF6B6B',
     emoji:    '🎯',
-    imageUrl: null,   // ← e.g. '/asset/turet.jpg'
+    imageUrl: 'asset/c-ram.jpg',
   },
   {
     id: 3,
@@ -853,7 +887,7 @@ const PROJECTS = [
     tools:    ['Blender','Substance Painter'],
     color:    '#C77DFF',
     emoji:    '⚔️',
-    imageUrl: null,   // ← e.g. '/asset/Axe/axe1.png'
+    imageUrl: 'asset/waraxe.png',
   },
   {
     id: 4,
@@ -864,7 +898,7 @@ const PROJECTS = [
     tools:    ['Roblox Studio','Blender'],
     color:    '#FFD166',
     emoji:    '🏫',
-    imageUrl: null,   // ← e.g. '/asset/telkm.png'
+    imageUrl: 'asset/telkom.png',
   },
   {
     id: 5,
@@ -1264,24 +1298,120 @@ function closeModalOvl(e){ if(e.target===e.currentTarget) closeModal(); }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 
 /* ───────────────────────────────────────────────────────────
-   ████  CONTACT FORM  ████
+   ████  EMAILJS SETUP  ████
+   ─────────────────────────────────────────────────────────
+   CARA SETUP (gratis, 200 email/bulan):
+   1. Daftar di https://www.emailjs.com
+   2. Add Email Service  → pilih Gmail → connect akun mnishfudesinski@gmail.com
+      Catat SERVICE_ID (contoh: 'service_abc123')
+   3. Create Email Template dengan variabel:
+        {{from_name}}  {{from_email}}  {{subject}}  {{message}}
+      Catat TEMPLATE_ID (contoh: 'template_xyz456')
+   4. Go to Account → API Keys → copy Public Key
+      Catat PUBLIC_KEY (contoh: 'user_AbCdEfGhIj')
+   5. Isi ketiga nilai di bawah ini:
 ─────────────────────────────────────────────────────────── */
-function submitForm(){
-  const n=document.getElementById('fName').value.trim();
-  const e=document.getElementById('fEmail').value.trim();
-  const m=document.getElementById('fMsg').value.trim();
-  if(!n||!e||!m) return;
-  const btn=document.getElementById('sendBtn');
-  btn.textContent='Sending…'; btn.disabled=true;
-  setTimeout(()=>{
-    btn.textContent='Send Message ↗'; btn.disabled=false;
-    document.getElementById('fName').value='';
-    document.getElementById('fEmail').value='';
-    document.getElementById('fMsg').value='';
-    const t=document.getElementById('toast');
-    t.style.display='flex';
-    setTimeout(()=>t.style.display='none',3800);
-  },1400);
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // ← ganti
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // ← ganti
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // ← ganti
+const RECIPIENT_EMAIL     = 'mnishfudesinski@gmail.com';
+
+// Init EmailJS
+(function(){
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+  }
+})();
+
+/* ───────────────────────────────────────────────────────────
+   ████  CONTACT FORM — SEND EMAIL  ████
+─────────────────────────────────────────────────────────── */
+function setFormStatus(type, msg) {
+  const el = document.getElementById('formStatus');
+  el.style.display = 'block';
+  if (type === 'success') {
+    el.style.background = 'rgba(126,251,203,0.1)';
+    el.style.border     = '1px solid rgba(126,251,203,0.3)';
+    el.style.color      = 'var(--ac)';
+  } else if (type === 'error') {
+    el.style.background = 'rgba(255,107,107,0.1)';
+    el.style.border     = '1px solid rgba(255,107,107,0.3)';
+    el.style.color      = '#FF6B6B';
+  } else {
+    el.style.background = 'rgba(255,255,255,0.04)';
+    el.style.border     = '1px solid var(--border)';
+    el.style.color      = 'var(--t2)';
+  }
+  el.textContent = msg;
+}
+
+function submitForm() {
+  const name    = document.getElementById('fName').value.trim();
+  const email   = document.getElementById('fEmail').value.trim();
+  const subject = document.getElementById('fSubject').value.trim();
+  const message = document.getElementById('fMsg').value.trim();
+
+  // Validation
+  if (!name)    { setFormStatus('error', '✕ Please enter your name.'); document.getElementById('fName').focus(); return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setFormStatus('error', '✕ Please enter a valid email address.');
+    document.getElementById('fEmail').focus(); return;
+  }
+  if (!message) { setFormStatus('error', '✕ Please write a message.'); document.getElementById('fMsg').focus(); return; }
+
+  const btn = document.getElementById('sendBtn');
+  btn.textContent = 'Sending…';
+  btn.disabled    = true;
+  btn.style.opacity = '0.7';
+  setFormStatus('loading', '⟳ Sending your message…');
+
+  // Check if EmailJS is configured
+  if (EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY' || typeof emailjs === 'undefined') {
+    // Fallback: open mailto if EmailJS not yet configured
+    const mailtoBody = encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\nSubject: ${subject || 'Portfolio Inquiry'}\n\n${message}`
+    );
+    window.open(
+      `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject || 'Portfolio Inquiry — ' + name)}&body=${mailtoBody}`,
+      '_blank'
+    );
+    btn.textContent  = 'Send Message ↗';
+    btn.disabled     = false;
+    btn.style.opacity = '1';
+    setFormStatus('success', '✦ Email client opened! (Setup EmailJS for direct sending — see code comments)');
+    return;
+  }
+
+  // Send via EmailJS
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    from_name:   name,
+    from_email:  email,
+    subject:     subject || 'Portfolio Inquiry',
+    message:     message,
+    to_email:    RECIPIENT_EMAIL,
+    reply_to:    email,
+  })
+  .then(() => {
+    btn.textContent  = 'Send Message ↗';
+    btn.disabled     = false;
+    btn.style.opacity = '1';
+    // Clear fields
+    ['fName','fEmail','fSubject','fMsg'].forEach(id => document.getElementById(id).value = '');
+    setFormStatus('success', '✦ Message sent! I\'ll get back to you soon.');
+    // Also show toast
+    const t = document.getElementById('toast');
+    t.style.display = 'flex';
+    setTimeout(() => t.style.display = 'none', 4000);
+    // Hide status after 6s
+    setTimeout(() => { document.getElementById('formStatus').style.display = 'none'; }, 6000);
+  })
+  .catch(err => {
+    console.error('EmailJS error:', err);
+    btn.textContent  = 'Send Message ↗';
+    btn.disabled     = false;
+    btn.style.opacity = '1';
+    setFormStatus('error', '✕ Failed to send. Please email directly: mnishfudesinski@gmail.com');
+  });
 }
 
 /* ───────────────────────────────────────────────────────────
