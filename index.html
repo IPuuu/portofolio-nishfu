@@ -219,26 +219,7 @@ nav.scrolled {
   pointer-events:none; z-index:0;
 }
 
-/* Hero image (right side) */
-.hero-image-wrap {
-  position:absolute; right:0; top:0; bottom:0;
-  width:45%; z-index:0; overflow:hidden; pointer-events:none;
-}
-.hero-image-wrap::before {
-  content:''; position:absolute; inset:0; z-index:1;
-  background:linear-gradient(90deg, var(--bg) 0%, transparent 40%),
-             linear-gradient(180deg, var(--bg) 0%, transparent 20%, transparent 80%, var(--bg) 100%);
-}
-.hero-image-wrap img {
-  width:100%; height:100%; object-fit:cover; object-position:center top;
-  opacity:.55; filter:grayscale(20%) contrast(1.05);
-  transition:opacity .4s;
-}
-[data-theme="light"] .hero-image-wrap img { opacity:.35; filter:grayscale(30%) contrast(1.1); }
-[data-theme="light"] .hero-image-wrap::before {
-  background:linear-gradient(90deg, var(--bg) 0%, transparent 40%),
-             linear-gradient(180deg, var(--bg) 0%, transparent 20%, transparent 80%, var(--bg) 100%);
-}
+/* hero image wrap removed — photo moved to about card */
 
 .hero-content { position:relative; z-index:1; max-width:1160px; margin:0 auto; width:100%; }
 
@@ -361,8 +342,29 @@ h1.hero-name {
   overflow:hidden; transition:background .4s,border-color .4s;
 }
 .about-card-img {
-  height:230px; display:flex; align-items:center; justify-content:center;
+  height:260px; display:flex; align-items:center; justify-content:center;
   position:relative; overflow:hidden;
+}
+/* Real photo inside about card */
+.about-card-img img.profile-photo {
+  width:100%; height:100%;
+  object-fit:cover; object-position:center top;
+  display:block; transition:transform .4s cubic-bezier(.22,1,.36,1);
+}
+.about-card:hover .about-card-img img.profile-photo { transform:scale(1.04); }
+/* Subtle accent overlay on top of photo */
+.about-card-img .photo-overlay {
+  position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg, transparent 55%, rgba(5,5,8,.7) 100%);
+  pointer-events:none;
+}
+[data-theme="light"] .about-card-img .photo-overlay {
+  background:linear-gradient(180deg, transparent 55%, rgba(248,247,242,.6) 100%);
+}
+/* Accent tint strip at top of photo */
+.about-card-img .photo-tint {
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:var(--ac); z-index:2;
 }
 .about-card-emoji { font-size:68px; position:relative; z-index:1; animation:float 4s ease-in-out infinite; }
 .corner-dec { position:absolute; width:14px; height:14px; }
@@ -621,10 +623,6 @@ footer {
 <!-- ═══ HERO ══════════════════════════════════════════════════ -->
 <section id="home">
   <canvas id="hero-canvas"></canvas>
-  <!-- Hero portrait image -->
-  <div class="hero-image-wrap">
-    <img src="asset/heroimage.jpg" alt="Nishfu" onerror="this.parentElement.style.display='none'">
-  </div>
   <div class="scan-line"></div>
   <div class="hero-content">
     <div class="hero-pre"><span class="hero-pre-dot"></span>Final-year Software Engineering Student</div>
@@ -673,13 +671,25 @@ footer {
       </div>
       <div class="reveal" data-delay=".15">
         <div class="about-card">
-          <div class="about-card-img" style="background:linear-gradient(135deg,#0D1F1A,#0D0D12,#1A0D1F)">
-            <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(126,251,203,.09),transparent 70%)"></div>
-            <div class="corner-dec" style="top:12px;left:12px;border-top:1px solid rgba(126,251,203,.4);border-left:1px solid rgba(126,251,203,.4)"></div>
-            <div class="corner-dec" style="top:12px;right:12px;border-top:1px solid rgba(126,251,203,.4);border-right:1px solid rgba(126,251,203,.4)"></div>
-            <div class="corner-dec" style="bottom:12px;left:12px;border-bottom:1px solid rgba(126,251,203,.4);border-left:1px solid rgba(126,251,203,.4)"></div>
-            <div class="corner-dec" style="bottom:12px;right:12px;border-bottom:1px solid rgba(126,251,203,.4);border-right:1px solid rgba(126,251,203,.4)"></div>
-            <div class="about-card-emoji">🎨</div>
+          <div class="about-card-img" style="background:#0D0D12">
+            <!-- Accent top line -->
+            <div class="photo-tint"></div>
+            <!-- Profile photo -->
+            <img
+              class="profile-photo"
+              src="asset/heroimage.jpg"
+              alt="Muhammad Nishfu Desinski"
+              onerror="this.style.display='none';document.getElementById('emoji-fb').style.display='flex'"
+            >
+            <!-- Fallback jika foto gagal load -->
+            <div id="emoji-fb" class="about-card-emoji" style="display:none">🎨</div>
+            <!-- Gradient overlay bawah -->
+            <div class="photo-overlay"></div>
+            <!-- Corner decorations -->
+            <div class="corner-dec" style="top:12px;left:12px;border-top:1px solid rgba(126,251,203,.55);border-left:1px solid rgba(126,251,203,.55);z-index:3"></div>
+            <div class="corner-dec" style="top:12px;right:12px;border-top:1px solid rgba(126,251,203,.55);border-right:1px solid rgba(126,251,203,.55);z-index:3"></div>
+            <div class="corner-dec" style="bottom:12px;left:12px;border-bottom:1px solid rgba(126,251,203,.55);border-left:1px solid rgba(126,251,203,.55);z-index:3"></div>
+            <div class="corner-dec" style="bottom:12px;right:12px;border-bottom:1px solid rgba(126,251,203,.55);border-right:1px solid rgba(126,251,203,.55);z-index:3"></div>
           </div>
           <div class="about-card-body">
             <div class="card-name">Muhammad Nishfu Desinski</div>
