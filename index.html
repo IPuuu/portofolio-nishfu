@@ -478,6 +478,68 @@ h1.hero-name {
 }
 .proj-card:hover .proj-edit-hint { opacity:1; }
 
+/* ── YouTube Lite Embed — card thumbnail ── */
+.yt-lite {
+  position: relative; width: 100%; height: 100%;
+  overflow: hidden; cursor: pointer;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Thumbnail via CSS background — tidak diblokir browser */
+.yt-lite-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  transition: transform .4s cubic-bezier(.22,1,.36,1), filter .3s;
+  filter: brightness(.82);
+}
+.proj-card:hover .yt-lite-bg {
+  transform: scale(1.06);
+  filter: brightness(.55);
+}
+/* Fallback gradient jika thumbnail gagal */
+.yt-lite-fallback {
+  position: absolute; inset: 0; z-index: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Play button */
+.yt-lite-play {
+  position: relative; z-index: 2;
+  pointer-events: none;
+  transition: transform .2s, opacity .2s;
+  opacity: .92;
+}
+.yt-lite-play svg { width: 56px; height: 40px;
+  filter: drop-shadow(0 2px 16px rgba(0,0,0,.7)); }
+.proj-card:hover .yt-lite-play { transform: scale(1.14); opacity: 1; }
+/* YouTube badge */
+.yt-lite-badge {
+  position: absolute; bottom: 10px; right: 10px; z-index: 3;
+  background: rgba(0,0,0,.78); border-radius: 4px;
+  padding: 3px 8px; font-family: 'DM Mono',monospace;
+  font-size: 10px; color: #fff; letter-spacing: .04em;
+  display: flex; align-items: center; gap: 5px; pointer-events: none;
+}
+/* Hover overlay text */
+.yt-lite-hover {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
+  background: linear-gradient(transparent, rgba(0,0,0,.65));
+  padding: 20px 14px 12px;
+  font-family: 'Syne',sans-serif; font-size: 13px; font-weight: 600;
+  color: #fff; pointer-events: none;
+  opacity: 0; transition: opacity .2s;
+}
+.proj-card:hover .yt-lite-hover { opacity: 1; }
+
+/* ── YouTube iframe inside modal ── */
+.modal-yt-wrap {
+  position: relative; width: 100%; padding-top: 56.25%;
+  background: #000; border-radius: 16px 16px 0 0; overflow: hidden;
+}
+.modal-yt-wrap iframe {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; border: none; display: block;
+}
+
 .proj-body { padding:18px 20px 20px; }
 .proj-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--t1); margin-bottom:7px; transition:color .4s; }
 .proj-desc { font-size:12px; line-height:1.65; color:var(--t2); margin-bottom:13px; transition:color .4s; }
@@ -528,10 +590,14 @@ h1.hero-name {
 .modal-box::-webkit-scrollbar { width:3px; }
 .modal-box::-webkit-scrollbar-thumb { background:var(--ac); border-radius:2px; }
 .modal-img-wrap {
-  height:220px; position:relative; overflow:hidden;
+  position:relative; overflow:hidden;
   border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:center;
+  /* default height for image/emoji */
+  min-height:220px;
 }
-.modal-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+/* when YouTube wrap is inside, modal-img-wrap has no fixed height */
+.modal-img-wrap:has(.modal-yt-wrap) { min-height:unset; display:block; }
+.modal-img-wrap img { width:100%; height:220px; object-fit:cover; display:block; }
 .modal-img-wrap .modal-emoji-fb { font-size:80px; position:relative; z-index:1; }
 .modal-close {
   position:absolute; top:14px; right:14px; width:34px; height:34px;
@@ -912,25 +978,27 @@ const PROJECTS = [
   },
   {
     id: 5,
-    title:    'Asset Detail Texturing',
-    cat:      'Texturing',
-    tags:     ['PBR','Detail','Texturing'],
-    desc:     'Advanced PBR texturing study — layered material breakdown exploring micro-detail, weathering, and physically accurate surface properties.',
-    tools:    ['Substance Painter','Blender'],
+    title:    'Environment Design',
+    cat:      'Environment Creating',
+    tags:     ['Environment','Lighting','Texturing'],
+    desc:     'Full 3D environment design — scene layout, atmosphere lighting, PBR material workflow, and final render composition using Blender.',
+    tools:    ['Blender','Substance Painter','HDRI Lighting'],
     color:    '#06D6A0',
-    emoji:    '🎨',
+    emoji:    '🌿',
     imageUrl: null,
+    youtubeId: '31xHPXnQczM',
   },
   {
     id: 6,
-    title:    'City Level Achievement',
-    cat:      'Competition',
-    tags:     ['Award','Game Art','3D'],
-    desc:     'Award-winning 3D game art submission that clinched City Level victory. Demonstrated mastery of game-ready asset pipeline end to end.',
+    title:    'Scene Creating',
+    cat:      'Idea Visualization',
+    tags:     ['Scene','Game Art','Blender'],
+    desc:     'Complete 3D scene creation process — from concept blocking to final polished render. Showcasing composition, lighting, and asset integration.',
     tools:    ['Blender','Substance Painter','Unity'],
     color:    '#F4A261',
-    emoji:    '🏆',
-    imageUrl: null,   // ← e.g. '/asset/Serti/kota.jpg'
+    emoji:    '🎬',
+    imageUrl: null,
+    youtubeId: 'z3P_l5ykt2s',
   },
 ];
 
@@ -1226,17 +1294,56 @@ function toggleTheme() {
    ████  PROJECTS — filter + render  ████
 ─────────────────────────────────────────────────────────── */
 let activeFilter='All';
-const cats=['All','Hard Surface','Game Asset','Arch Viz','High Poly','Texturing','Competition'];
+// Bangun filter tabs dinamis dari data project yang ada
+const allCats = ['All', ...new Set(PROJECTS.map(p=>p.cat))];
+let cats = allCats;
 
 function buildProjImg(p) {
+  if (p.youtubeId) {
+    /* ─────────────────────────────────────────────────────
+       YouTube Lite Embed — thumbnail via CSS background-image
+       Menggunakan img.youtube.com sebagai background CSS,
+       bukan <img> tag. Cara ini melewati CORS restriction
+       karena browser load CSS background secara normal.
+       Fallback: gradient + emoji jika thumbnail tidak load.
+    ───────────────────────────────────────────────────── */
+    const hq  = `https://img.youtube.com/vi/${p.youtubeId}/hqdefault.jpg`;
+    const mq  = `https://img.youtube.com/vi/${p.youtubeId}/mqdefault.jpg`;
+
+    return `
+      <div class="yt-lite" data-ytid="${p.youtubeId}">
+        <!-- Fallback gradient + emoji (selalu tampil di belakang) -->
+        <div class="yt-lite-fallback" style="background:linear-gradient(135deg,${p.color}35,${p.color}08,#0D0D12)">
+          <span style="font-size:48px;opacity:.2">${p.emoji}</span>
+        </div>
+        <!-- Thumbnail via background-image CSS (tidak diblokir) -->
+        <div class="yt-lite-bg" style="background-image:url('${hq}');"></div>
+        <!-- Play button SVG -->
+        <div class="yt-lite-play">
+          <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+            <rect width="68" height="48" rx="12" fill="#FF0000" opacity=".9"/>
+            <path d="M27 34.5l18-10.5L27 13.5v21z" fill="#fff"/>
+          </svg>
+        </div>
+        <!-- Badge YouTube -->
+        <span class="yt-lite-badge">
+          <svg width="10" height="7" viewBox="0 0 68 48" style="flex-shrink:0">
+            <rect width="68" height="48" rx="8" fill="#FF0000"/>
+            <path d="M27 34.5l18-10.5L27 13.5v21z" fill="#fff"/>
+          </svg>
+          YouTube
+        </span>
+        <!-- Hover overlay -->
+        <div class="yt-lite-hover">Klik untuk tonton ▶</div>
+      </div>
+      <div class="proj-img-grid"></div>`;
+  }
   if (p.imageUrl) {
-    // Real image
     return `
       <img src="${p.imageUrl}" alt="${p.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
       <div style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:56px">${p.emoji}</div>
       <div class="proj-img-grid"></div>`;
   }
-  // Emoji fallback
   return `
     <div class="proj-img-grid"></div>
     <div class="proj-img-glow"></div>
@@ -1244,6 +1351,19 @@ function buildProjImg(p) {
 }
 
 function buildModalImg(p) {
+  // YouTube embed — full iframe di modal
+  if (p.youtubeId) {
+    return `
+      <div class="modal-yt-wrap">
+        <iframe
+          src="https://www.youtube.com/embed/${p.youtubeId}?rel=0&modestbranding=1&color=white"
+          title="${p.title}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>`;
+  }
   if (p.imageUrl) {
     return `<img src="${p.imageUrl}" alt="${p.title}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">
       <div class="modal-emoji-fb" style="display:${p.imageUrl?'none':'flex'}">${p.emoji}</div>`;
@@ -1262,7 +1382,9 @@ function renderFilters(){
 
 function renderProjects(){
   const g=document.getElementById('projGrid');
-  const list=activeFilter==='All'?PROJECTS:PROJECTS.filter(p=>p.cat===activeFilter);
+  const list=activeFilter==='All'
+    ? PROJECTS
+    : PROJECTS.filter(p=>p.cat.toLowerCase()===activeFilter.toLowerCase());
   g.innerHTML='';
   list.forEach((p,i)=>{
     const d=document.createElement('div');
@@ -1294,7 +1416,16 @@ renderFilters(); renderProjects();
 ─────────────────────────────────────────────────────────── */
 function openModal(p){
   const wrap=document.getElementById('modalImgWrap');
-  wrap.innerHTML=`${buildModalImg(p)}<button class="modal-close" onclick="closeModal()">×</button>`;
+  const closeBtn = `<button class="modal-close" onclick="closeModal()" style="z-index:10">×</button>`;
+  if (p.youtubeId) {
+    // YouTube: close button floats above the 16:9 iframe wrapper
+    wrap.innerHTML = buildModalImg(p) + closeBtn;
+    // Make wrap position relative for close btn
+    wrap.style.cssText = 'position:relative;border-radius:16px 16px 0 0;overflow:hidden;';
+  } else {
+    wrap.innerHTML = buildModalImg(p) + closeBtn;
+    wrap.style.cssText = '';
+  }
   document.getElementById('modalTags').innerHTML=
     p.tags.map(t=>`<span class="tag" style="padding:4px 10px;border-radius:4px;background:${p.color}12;border:1px solid ${p.color}30;color:${p.color};font-family:'DM Mono',monospace;font-size:11px">${t}</span>`).join('');
   document.getElementById('modalTitle').textContent=p.title;
